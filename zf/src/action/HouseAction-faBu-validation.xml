@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE validators PUBLIC 
+  		"-//Apache Struts//XWork Validator 1.0.2//EN"
+  		"http://struts.apache.org/dtds/xwork-validator-1.0.2.dtd">
+<validators>
+	<field name="house.title">
+		<field-validator type="requiredstring">
+			<param name="trim">true</param>
+			<message>对不起，标题不能为空!</message>
+		</field-validator>
+		
+		<field-validator type="stringlength">
+			<param name="maxLength">20</param>
+			<param name="minLength">5</param>
+			<message>对不起，标题的长度必须在5到20个字符之间!</message>
+		</field-validator>
+	</field>
+	
+</validators>  		

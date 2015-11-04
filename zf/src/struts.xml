@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<!-- 设置Struts2的常量 对Struts2进行初始化配置  具体配置信息参考手册 -->
+	<constant name="struts.ui.theme" value="simple"></constant>
+	<constant name="struts.custom.i18n.resources" value="message"></constant>
+	
+	
+	<!--  package用于区分不同类型的用户请求  
+		  name属性 包名不可重复
+		  namespace  请求的命名空间 默认值为/
+		  extends 继承 继承某个包，继承后将拥有父包中所有的内容 通常情况下必须继承struts-default或其子包
+		  abstract 是否是抽象包 如果属性值为true 则该包中不能拥有action元素
+		  -->
+	<package name="default" namespace="/" extends="struts-default">
+		
+		
+		
+		<!-- 用户请求 
+		name 属性 用户请求名必须和页面中的请求对应，但不能有.action
+		class 属性 指定由哪个类来处理用户请求
+		method 属性指定由哪个方法完成请求处理 默认值为execute 
+		 -->
+		<action name="login" class="action.LoginAction">
+		
+			<!-- 用户的响应结果 
+				name 属性 用户的响应名称需要与action的返回值对应
+				result 标签的值 用户的响应位置
+				type 用于指定响应类型
+				取值 chain 链式处理 用于请求转发到某个action
+					redirect  重定向到某个页面     			//刷新需重新登录
+					redirectAction  重定向到某个action	//刷新不需重新登录
+					dispatcher 默认值用于请求转发到某个页面
+			-->
+			
+			<result name="success" type="redirectAction">fenYe</result>
+			<result name="error">/login.jsp</result>
+		</action>
+		<!-- class 属性不写默认执行ActionSupport类中的execute方法 
+			用于直接转向某个页面
+		-->
+		<action name="goZhuCe">
+		<!-- name属性不写 默认值为success -->
+			<result>/zhuce.jsp</result>
+		</action>
+	
+		<!-- 由UserAction类中的zhuCe方法完成功能 -->
+		<action name="zhuCe" class="action.UserAction" method="zhuCe">
+			<result name="success">/ok.jsp</result>
+			<result name="error">/zhuce.jsp</result>
+		</action>
+		
+		<action name="index">
+			<result name="success">/mainindex.jsp</result>
+		</action>
+		
+		<action name="souSuo" class="action.HouseAction" method="souSuo">
+			<result name="success" type="chain">index</result>
+		</action>
+		
+		
+	</package>	
+	
+	<!-- 把需要保护的操作放到private包内，并配置拦截器（不需要拦截的配置到默认包中） -->
+	<package name="private" namespace="/" extends="json-default">
+		
+		<interceptors>
+			<interceptor name="sfdl" class="interceptors.CheckLogined"></interceptor>
+			<interceptor-stack name="myStack">
+				<interceptor-ref name="sfdl"></interceptor-ref>
+				<interceptor-ref name="defaultStack"></interceptor-ref>
+			</interceptor-stack>
+			
+		</interceptors>
+		<!--
+			应用默认拦截
+			默认拦截器对整个包中所有的action请求都起拦截作用
+			如果某个action元素中使用了局部的拦截器 那么针对这个action元素默认拦截器配置将失效
+		 -->
+		<default-interceptor-ref name="myStack"></default-interceptor-ref>
+		<!-- 全局结果  (放到所有的action之前)
+			 作用于整个包中所有的请求和拦截器进行页面响应
+			 如果局部action请求配置的与全局结果name属性相同的结果 则会覆盖掉全局结果
+		 -->
+		<global-results>
+			<result name="login">/login.jsp</result>
+		</global-results>
+		
+		<action name="fenYe" class="action.HouseAction" method="fenYe">
+			<result name="success">/main.jsp</result>
+		
+		</action>
+		
+		<action name="goFaBu" class="action.HouseAction" method="huoQuQuYu">
+			<result name="success">/fabu.jsp</result>
+		</action>
+		
+		<action name="faBu" class="action.HouseAction" method="faBu">
+			<interceptor-ref name="sfdl"></interceptor-ref>
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+			<interceptor-ref name="myStack"></interceptor-ref>
+			<result name="success" type="redirectAction">fenYe</result>
+			<result name="error" type="chain">goFaBu</result>
+			<result name="input" type="">fabu.jsp</result>
+			<result name="login">/login.jsp</result>
+		</action>
+		
+		<action name="quXiuGai" class="action.HouseAction" method="huoQuFangWu">
+			<result name="success">/xiugai.jsp</result>
+		</action>
+		
+		<action name="delete" class="action.HouseAction" method="delete">
+			<result name="success" type="redirectAction">fenYe</result>
+			<result name="error" type="chain">goFaBu</result>
+			<result name="input" type="">fabu.jsp</result>
+			<result name="login">/login.jsp</result>
+		</action>
+		
+		<action name="ld" class="action.HouseAction" method="ld">
+			<result name="success" type="json">
+			<!-- 配置需要返回的JSON对象的名称 -->
+				<param name="root">jsonList</param>
+				<param name="contentType">text/html</param>
+	
+			</result>
+		</action>
+	</package>
+	
+</struts>    

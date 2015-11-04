@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"
+			value="com.mysql.jdbc.Driver">
+		</property>
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/oracle">
+		</property>
+		<property name="username" value="root"></property>
+		<property name="password" value="root"></property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+			</props>
+		</property>
+		
+		<property name="mappingResources">
+			<list>
+				<value>classpath:entity/Users.hbm.xml</value>
+				<value>classpath:entity/Street.hbm.xml</value>
+				<value>classpath:entity/District.hbm.xml</value>
+				<value>classpath:entity/Type.hbm.xml</value>
+				<value>classpath:entity/House.hbm.xml</value>
+			</list>
+		</property>
+		</bean>
+		<!-- 定义事务管理器对象 -->
+		<bean id="tm" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+			<property name="sessionFactory" ref="sessionFactory"></property>
+		
+		</bean>
+		
+		<!-- 配置事务的传播策略以及事务规则 -->
+		<tx:advice id="txAdvice" transaction-manager="tm">
+			<!-- 配置规则和策略 -->
+			<tx:attributes>
+				<!-- 对什么样的方法添加什么样的事务规则，name为方法规则 
+				propagation  事务策略  read-only 是否是只读事务  
+				rollback-for 什么样的异常需要回滚事务   多个异常用，分隔
+				name  取值add* 表示以add开头的方法需要添加事务
+				propagation  取值REQUIRED  必须拥有独立事务  如果当前环境在事务中则使用当前事务  否则开启新的事务
+				 -->
+				<tx:method name="add*" propagation="REQUIRED"/>
+				<tx:method name="update*" propagation="REQUIRED"/>
+				<tx:method name="delete*" propagation="REQUIRED" />
+				<tx:method name="find" read-only="true"/>				
+				<tx:method name="get*" read-only="true"/>
+			</tx:attributes>
+		</tx:advice>
+		
+		<!-- 配置aop  (声明式事务) -->
+		<aop:config>
+			<aop:pointcut expression="execution(* biz.impl.*.*(..))" id="pointcutId"/>
+			<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcutId" />	
+		</aop:config>
+		
+		<!-- 配置Hibernate的模板对象 -->
+		<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+			<property name="sessionFactory" ref="sessionFactory"></property>
+		</bean>
+		
+		<!-- biz的bean id必须与Action类中的biz属性名完全相同  这样Spring会自动向Action中注入数据 -->
+		<bean id="usersBiz" class="biz.impl.UsersBizImpl">
+			<property name="usersDao" ref="usersDao"></property>
+		</bean>
+		
+		<bean id="usersDao" class="dao.impl.UsersDaoImpl">
+			<property name="hibernateOperations" ref="hibernateTemplate"></property>					
+		</bean>
+		
+		<bean id="userBiz" class="biz.impl.UserBizImpl">
+			<property name="userDao" ref="userDao"></property>
+		</bean>
+		
+		<bean id="userDao" class="dao.impl.UserDaoImplSpr">
+			<property name="hibernateOperations" ref="hibernateTemplate"></property>					
+		</bean>
+		
+		<bean id="houseBiz" class="biz.impl.HouseBizImpl">
+			<property name="houseDao" ref="houseDao"></property>
+		</bean>
+		
+		<bean id="houseDao" class="dao.impl.HouseDaoImplSpr">
+			<property name="hibernateOperations" ref="hibernateTemplate"></property>
+		</bean>
+		
+		
+	</beans>
