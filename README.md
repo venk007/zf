@@ -1,7 +1,6 @@
-# zf (Housing rent)
->Java
->>Java Web
->>>SSH
+# Housing rent
+>Java Web
 
-For Studying<br>
-HM of Ms.Luo
+SSH框架的WEB工程——租房网<br>
+已全部完成，无需其他修改，随意拿去当大作业！~<br>
+HM of Ms.Luo<br>
